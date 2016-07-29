@@ -1,6 +1,7 @@
 package zoe.youngplussoft.lucene.sample;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
@@ -68,6 +69,8 @@ public class SampleTest {
 			
 			String question;
 			String indexDirPath = "./index2" ;
+			
+			new File(indexDirPath).mkdir();
 			
       	    Analyzer analyzer = new KoreanAnalyzer() ;
       	    ((KoreanAnalyzer)analyzer).setBigrammable(false) ;
