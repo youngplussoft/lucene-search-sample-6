@@ -49,90 +49,84 @@ import org.apache.lucene.analysis.ko.KoreanAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.Version;
-import org.apache.lucene.document.NumericDocValuesField ;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
-import org.apache.lucene.search.BooleanQuery.Builder ;
+import org.apache.lucene.search.BooleanQuery.Builder;
 
 public class SampleTest {
-	
 
-	
 	public static void MakeIndex() {
-		
+
 		try {
-			
+
 			long start = System.currentTimeMillis();
-			
-			String dataFileName = "./data/news.csv" ;
-			BufferedReader in = new BufferedReader(
-                				new InputStreamReader(new FileInputStream(dataFileName)));
-			
+
+			String dataFileName = "./data/news.csv";
+			BufferedReader in = new BufferedReader(new InputStreamReader(new FileInputStream(dataFileName)));
+
 			String question;
-			String indexDirPath = "./index2" ;
-			
+			String indexDirPath = "./index2";
+
 			new File(indexDirPath).mkdir();
-			
-      	    Analyzer analyzer = new KoreanAnalyzer() ;
-      	    ((KoreanAnalyzer)analyzer).setBigrammable(false) ;
-      	    
-      	    
-        	Path path = FileSystems.getDefault().getPath(indexDirPath);
-            Directory directory = new NIOFSDirectory(path) ;           
-            IndexWriterConfig config = new IndexWriterConfig(analyzer) ;
-            IndexWriter writer = new IndexWriter(directory, config) ;           
-            writer.deleteAll() ;
-      	  
-      	    int id = 1 ;
-	        while ((question = in.readLine()) != null) {	        	  		
-	  			
-	  			    String fields[] = question.split("@#@") ;
-	        	  
-	               Document doc = new Document();
 
-	   				
-	                doc.add(new IntPoint("id", Integer.parseInt(fields[0])));
-	                doc.add(new StoredField("id", Integer.parseInt(fields[0])));
-	                doc.add(new StringField("magazine", fields[1],Field.Store.YES));
-	                doc.add(new StringField("type", fields[2],Field.Store.YES));
-	                doc.add(new StringField("category", fields[3],Field.Store.YES));	                
-	                doc.add(new TextField("title", fields[4], Field.Store.YES));
-	                doc.add(new StringField("url", fields[5], Field.Store.YES));	 
-	                doc.add(new StringField("pubdate", fields[6], Field.Store.YES));	
-	                doc.add(new NumericDocValuesField("order", Integer.parseInt(fields[0])));
+			Analyzer analyzer = new KoreanAnalyzer();
+			((KoreanAnalyzer) analyzer).setBigrammable(false);
 
-	                writer.addDocument(doc);	                
-	                
-	                if( id % 100 == 0 ) {
-	                	System.out.println(id + "sentences !!!") ;
-	                }
-	                
-	                id++ ;
-	            
-	         }
-			 writer.commit();
-			 writer.close() ;
-			 System.out.println("Indexing completed.") ;
-			 
+			Path path = FileSystems.getDefault().getPath(indexDirPath);
+			Directory directory = new NIOFSDirectory(path);
+			IndexWriterConfig config = new IndexWriterConfig(analyzer);
+			IndexWriter writer = new IndexWriter(directory, config);
+			writer.deleteAll();
+
+			int id = 1;
+			while ((question = in.readLine()) != null) {
+
+				String fields[] = question.split("@#@");
+
+				Document doc = new Document();
+
+				doc.add(new IntPoint("id", Integer.parseInt(fields[0])));
+				doc.add(new StoredField("id", Integer.parseInt(fields[0])));
+				doc.add(new StringField("magazine", fields[1], Field.Store.YES));
+				doc.add(new StringField("type", fields[2], Field.Store.YES));
+				doc.add(new StringField("category", fields[3], Field.Store.YES));
+				doc.add(new TextField("title", fields[4], Field.Store.YES));
+				doc.add(new StringField("url", fields[5], Field.Store.YES));
+				doc.add(new StringField("pubdate", fields[6], Field.Store.YES));
+				doc.add(new NumericDocValuesField("order", Integer.parseInt(fields[0])));
+
+				writer.addDocument(doc);
+
+				if (id % 100 == 0) {
+					System.out.println(id + "sentences !!!");
+				}
+
+				id++;
+
+			}
+			writer.commit();
+			writer.close();
+			System.out.println("Indexing completed.");
+
 			long end = System.currentTimeMillis();
-			
-			long hour = (end-start)/(1000*360*60) ;
-			long min  = ((end-start)/(1000*60))%60 ;
-			long sec  = ((end-start)/(1000))%60 ;
-			long msec = (end-start)%(1000) ;
-			
-			System.out.println("Indexing elapsed time(hh:mm:ss.ms) : " + hour + ":" + min + ":" + sec + "." + msec) ;
-			
+
+			long hour = (end - start) / (1000 * 360 * 60);
+			long min = ((end - start) / (1000 * 60)) % 60;
+			long sec = ((end - start) / (1000)) % 60;
+			long msec = (end - start) % (1000);
+
+			System.out.println("Indexing elapsed time(hh:mm:ss.ms) : " + hour + ":" + min + ":" + sec + "." + msec);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error on Indexing...");
 		}
-		catch(Exception e) {
-			e.printStackTrace() ;
-			System.out.println("Error on Indexing...") ;
-		}
-		
+
 	}
-	
-	public static String hilight(Query query, IndexReader reader, 
-			String fieldName, Analyzer analyzer, String fieldStr) {
-		
+
+	public static String hilight(Query query, IndexReader reader, String fieldName, Analyzer analyzer,
+			String fieldStr) {
+
 		QueryScorer scorer = new QueryScorer(query, reader, fieldName);
 		Highlighter highlighter = new Highlighter(scorer);
 		Fragmenter fragmenter = new SimpleSpanFragmenter(scorer);
@@ -140,184 +134,172 @@ public class SampleTest {
 
 		String fragment = null;
 		try {
-		  fragment = highlighter.getBestFragment(analyzer, fieldName, fieldStr) ;
+			fragment = highlighter.getBestFragment(analyzer, fieldName, fieldStr);
 		} catch (Exception e) {
-		   e.printStackTrace();
-		   fragment = null;
+			e.printStackTrace();
+			fragment = null;
 		}
-		
-		return fragment ;
+
+		return fragment;
 	}
-	
+
 	public static int toInt(byte[] bytes, int offset) {
-		  int ret = 0;
-		  for (int i=0; i<4 && i+offset<bytes.length; i++) {
-		    ret <<= 8;
-		    ret |= (int)bytes[i] & 0xFF;
-		  }
-		  return ret;
+		int ret = 0;
+		for (int i = 0; i < 4 && i + offset < bytes.length; i++) {
+			ret <<= 8;
+			ret |= (int) bytes[i] & 0xFF;
 		}
-	
+		return ret;
+	}
+
 	public static void searchByQueryParser() {
-		
+
 		try {
-			
 
-            String dir = "./index2";
-                    
-            Path path = FileSystems.getDefault().getPath(dir);
-            Directory directory = new NIOFSDirectory(path);
-            IndexReader reader = DirectoryReader.open(directory);
-            IndexSearcher searcher = new IndexSearcher(reader);         
-            
-            KoreanAnalyzer analyzer = new KoreanAnalyzer() ;
-            analyzer.setBigrammable(false) ;
-            
+			String dir = "./index2";
 
-            String source = "청목회 소환통보" ;
-            QueryParser qp = new QueryParser("title", analyzer);
-            qp.setDefaultOperator(Operator.OR) ;
-            Query query = qp.parse(source) ;
-                
-         
-            TopDocs tops = null ;
-            
-            try {
+			Path path = FileSystems.getDefault().getPath(dir);
+			Directory directory = new NIOFSDirectory(path);
+			IndexReader reader = DirectoryReader.open(directory);
+			IndexSearcher searcher = new IndexSearcher(reader);
 
-            	SortField sf = new SortField("order",SortField.Type.INT,false);
-            	Sort sort = new Sort(sf);
-            	//tops = searcher.search(query, 10, sort) ;
-            	tops = searcher.search(query, 10) ;
-            }
-            catch(Exception e) {
-            	e.printStackTrace() ;
-            	
-            }
-            
-            int total = tops.scoreDocs.length ;
-            for(int i=0 ; tops != null && i<total && i<tops.totalHits ; i++) {
-            	
-            	Document doc = searcher.doc(tops.scoreDocs[i].doc); 
+			KoreanAnalyzer analyzer = new KoreanAnalyzer();
+			analyzer.setBigrammable(false);
 
-            	IndexableField idF = doc.getField("id");
+			String source = "청목회 소환통보";
+			QueryParser qp = new QueryParser("title", analyzer);
+			qp.setDefaultOperator(Operator.OR);
+			Query query = qp.parse(source);
+
+			TopDocs tops = null;
+
+			try {
+
+				SortField sf = new SortField("order", SortField.Type.INT, false);
+				Sort sort = new Sort(sf);
+				// tops = searcher.search(query, 10, sort) ;
+				tops = searcher.search(query, 10);
+			} catch (Exception e) {
+				e.printStackTrace();
+
+			}
+
+			int total = tops.scoreDocs.length;
+			for (int i = 0; tops != null && i < total && i < tops.totalHits; i++) {
+
+				Document doc = searcher.doc(tops.scoreDocs[i].doc);
+
+				IndexableField idF = doc.getField("id");
 				Number ids = idF.numericValue();
 				int id = ids.intValue();
-            	// sorting 용 변수는 값을 가져오지 못함. 
-            	
-            	String magazine = doc.get("magazine") ;
-            	String type = doc.get("type") ;
-            	String category = doc.get("category") ;
-            	String title = doc.get("title") ;
-            	String url = doc.get("url") ;
-            	String pubdate = doc.get("pubdate") ;
-            	
-            	String hi = hilight(query, reader, "title", analyzer, "청목회 소환통보" ) ;
-            	
-            	System.out.println(id + ":" + magazine + ":" + type + ":" + category + ":" + hi + ":" + url + ":" + pubdate) ;
-            }
-            
-            reader.close();
-            directory.close();
+				// sorting 용 변수는 값을 가져오지 못함.
 
+				String magazine = doc.get("magazine");
+				String type = doc.get("type");
+				String category = doc.get("category");
+				String title = doc.get("title");
+				String url = doc.get("url");
+				String pubdate = doc.get("pubdate");
+
+				String hi = hilight(query, reader, "title", analyzer, "청목회 소환통보");
+
+				System.out.println(
+						id + ":" + magazine + ":" + type + ":" + category + ":" + hi + ":" + url + ":" + pubdate);
+			}
+
+			reader.close();
+			directory.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-        catch(Exception e) {
-        	e.printStackTrace() ;
-        }
 	}
-	
-	
-	
-	
+
 	public static void searchByBooleanQuery() {
-		
+
 		try {
-			
 
-            String dir = "./index2";
-                    
-            Path path = FileSystems.getDefault().getPath(dir);
-            Directory directory = new NIOFSDirectory(path);
-            IndexReader reader = DirectoryReader.open(directory);
-            IndexSearcher searcher = new IndexSearcher(reader);         
-            
-            KoreanAnalyzer analyzer = new KoreanAnalyzer() ;
-            analyzer.setBigrammable(false) ;
-            
+			String dir = "./index2";
 
-            String source = "청목회 소환통보" ;
-            QueryParser qp = new QueryParser("title", analyzer);
-            qp.setDefaultOperator(Operator.OR) ;
-            Query query0 = qp.parse(source) ;
-            
-            Query query1 = new TermQuery(new Term("magazine", "SBS")) ;
-            Query query2 = new TermQuery(new Term("type", "종합신문")) ;
-            Query query3 = new TermQuery(new Term("category", "속보")) ;
-            
-            Builder builder = new Builder() ;
-            builder.add(query0, BooleanClause.Occur.MUST) ;
-            builder.add(query1, BooleanClause.Occur.MUST) ;
-            builder.add(query2, BooleanClause.Occur.MUST) ;
-            builder.add(query3, BooleanClause.Occur.MUST) ;
-            
-            Query query = builder.build();
-               
-         
-            TopDocs tops = null ;
-            
-            try {
+			Path path = FileSystems.getDefault().getPath(dir);
+			Directory directory = new NIOFSDirectory(path);
+			IndexReader reader = DirectoryReader.open(directory);
+			IndexSearcher searcher = new IndexSearcher(reader);
 
-            	tops = searcher.search(query, 10) ;
-            }
-            catch(Exception e) {
-            	e.printStackTrace() ;
-            	
-            }
-            
-            int total = tops.scoreDocs.length ;
-            for(int i=0 ; tops != null && i<total && i<tops.totalHits ; i++) {
-            	
-            	Document doc = searcher.doc(tops.scoreDocs[i].doc); 
-            	
-            	IndexableField membersF = doc.getField("id") ;
-            	Number members = membersF.numericValue() ;
-            	int id = members.intValue() ;
-            	// sorting 용 변수는 값을 가져오지 못함. 
-            	
-            	String magazine = doc.get("magazine") ;
-            	String type = doc.get("type") ;
-            	String category = doc.get("category") ;
-            	String title = doc.get("title") ;
-            	String url = doc.get("url") ;
-            	String pubdate = doc.get("pubdate") ;
-            	
-            	String hi = hilight(query, reader, "title", analyzer, "청목회 소환통보" ) ;
-            	
-            	System.out.println(id + ":" + magazine + ":" + type + ":" + category + ":" + hi + ":" + url + ":" +  pubdate) ;
-          
-            }
-            
-            reader.close();
-            directory.close();
+			KoreanAnalyzer analyzer = new KoreanAnalyzer();
+			analyzer.setBigrammable(false);
 
+			String source = "청목회 소환통보";
+			QueryParser qp = new QueryParser("title", analyzer);
+			qp.setDefaultOperator(Operator.OR);
+			Query query0 = qp.parse(source);
+
+			Query query1 = new TermQuery(new Term("magazine", "SBS"));
+			Query query2 = new TermQuery(new Term("type", "종합신문"));
+			Query query3 = new TermQuery(new Term("category", "속보"));
+
+			Builder builder = new Builder();
+			builder.add(query0, BooleanClause.Occur.MUST);
+			builder.add(query1, BooleanClause.Occur.MUST);
+			builder.add(query2, BooleanClause.Occur.MUST);
+			builder.add(query3, BooleanClause.Occur.MUST);
+
+			Query query = builder.build();
+
+			TopDocs tops = null;
+
+			try {
+
+				tops = searcher.search(query, 10);
+			} catch (Exception e) {
+				e.printStackTrace();
+
+			}
+
+			int total = tops.scoreDocs.length;
+			for (int i = 0; tops != null && i < total && i < tops.totalHits; i++) {
+
+				Document doc = searcher.doc(tops.scoreDocs[i].doc);
+
+				IndexableField membersF = doc.getField("id");
+				Number members = membersF.numericValue();
+				int id = members.intValue();
+				// sorting 용 변수는 값을 가져오지 못함.
+
+				String magazine = doc.get("magazine");
+				String type = doc.get("type");
+				String category = doc.get("category");
+				String title = doc.get("title");
+				String url = doc.get("url");
+				String pubdate = doc.get("pubdate");
+
+				String hi = hilight(query, reader, "title", analyzer, "청목회 소환통보");
+
+				System.out.println(
+						id + ":" + magazine + ":" + type + ":" + category + ":" + hi + ":" + url + ":" + pubdate);
+
+			}
+
+			reader.close();
+			directory.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-        catch(Exception e) {
-        	e.printStackTrace() ;
-        }
 	}
-	
+
 	public static void main(String[] argv) {
-		
-		
-		MakeIndex() ;
-		
+
+		MakeIndex();
+
 		System.out.println("======================================================================");
-		
-		searchByQueryParser() ;
-		
+
+		searchByQueryParser();
+
 		System.out.println("======================================================================");
-		
-		searchByBooleanQuery() ;
-		
+
+		searchByBooleanQuery();
+
 	}
 
 }

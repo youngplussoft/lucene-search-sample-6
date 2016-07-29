@@ -60,7 +60,7 @@ public class SearchIndex2 {
 				 * if( source.equals("exit") ) break ;
 				 */
 
-				//source = "하세요";
+				// source = "하세요";
 
 				/*
 				 * QueryParser qp = new QueryParser("content", analyzer);
@@ -74,9 +74,9 @@ public class SearchIndex2 {
 				 * pquery = qp.parse("감기");
 				 */
 
-				QueryParser qp = new QueryParser("content", analyzer); 
+				QueryParser qp = new QueryParser("content", analyzer);
 				Query pquery = qp.parse("감기");
-				Query nquery = IntPoint.newRangeQuery("members", 1, 1000) ;
+				Query nquery = IntPoint.newRangeQuery("members", 1, 1000);
 
 				Builder builder = new Builder();
 				// FILTER : AND(Not Scoring), MUST : AND, SHOULD : OR, MUST_NOT
